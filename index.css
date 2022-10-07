@@ -6,3 +6,6 @@ body {
     background-color: black;
     outline: red 3px solid;
 }
+.divMain{
+    padding-bottom: 35px;
+}
