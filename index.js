@@ -1,107 +1,120 @@
 // Score
 let score = 0;
 
-// Game Board Items
-const board = document.getElementById("board");
-const snake = board.getContext("2d");
-const food = board.getContext("2d");
+// Board
+const blockSize = 25;
+const rows = 25;
+const columns = 25;
+let board;
+let context;
 
-// Movement
-// (let x = board.width / 2) because x goes sideways on the axis.
-let snakeX = board.width / 2;
-// (let y = board.height) because goes up on the axis.
-let snakeY = board.height - 300;
+// Snake head
+let snakeX = blockSize
+let snakeY = blockSize
 
-let foodX = 20;
-let foodY = 580;
+let bodyOfSnake = [];
 
-let snakeSizeWidth = 20
-let snakeSizeHeight = 20
+let foodX;
+let foodY;
 
-// the direction on the axis
-let snakeRight = 20;
-let snakeUp = -20;
+let speedX = 0;
+let speedY = 0;
 
 window.onload = function () {
-  document.addEventListener("keydown", (e) => {
-    keyPress(e);
-  });
+  newGame()
 };
+function newGame(){
+    board = document.getElementById("board");
+  board.height = rows * blockSize;
+  board.width = columns * blockSize;
+  context = board.getContext("2d");
 
-function startGame(){
-foodSpawn()
-snakeSpawn()
+  document.addEventListener("keydown", changeDirection);
+  foodPlace();
+  setInterval(update, 100);
+  
 }
 
-foodSpawn();
+function update() {
+    gameEnd()
+  context.fillStyle = "black";
+  context.fillRect(0, 0, board.width, board.height);
 
-function changeFood(){
-    min = 20
-    max = 580
-    return Math.random() * (max - min) + min;
-}
+  context.fillStyle = "white";
+  context.fillRect(foodX, foodY, blockSize, blockSize);
 
-
-function keyPress(e) {
-  if (e.key === "ArrowRight") {
-    snakeX = snakeX + 20;
+  if (snakeX == foodX && snakeY == foodY) {
+    bodyOfSnake.push([foodX, foodY])
+    foodPlace()
   }
-  if (e.key === "ArrowLeft") {
-    snakeX = snakeX + -20;
+
+   for(let i = bodyOfSnake.length - 1; i > 0; i--){
+    bodyOfSnake[i] = bodyOfSnake[i - 1];
+   }
+
+   if(bodyOfSnake.length){
+    bodyOfSnake[0] = [snakeX, snakeY]
+   }
+
+  context.fillStyle = "blue";
+  snakeX += speedX * blockSize;
+  snakeY += speedY * blockSize;
+  context.fillRect(snakeX, snakeY, blockSize, blockSize);
+  for (let i = 0; i < bodyOfSnake.length; i++) {
+    context.fillRect(bodyOfSnake[i][0], bodyOfSnake[i][1], blockSize, blockSize)
   }
-  if (e.key === "ArrowUp") {
-    snakeY = snakeY - 20;
-  }
-  if (e.key === "ArrowDown") {
-    snakeY = snakeY + 20;
-  }
-  addToSnake()
+
 }
 
-function foodSpawn() {
-food.clearRect(0, 0, board.width, board.height);
-  food.beginPath();
-  food.rect(changeFood(), changeFood(), 20, 20);
-  food.fillStyle = "White";
-  food.fill();
-  food.closePath();
+function foodPlace() {
+  foodX = Math.floor(Math.random() * columns) * blockSize;
+  foodY = Math.floor(Math.random() * rows) * blockSize;
+  points();
 }
 
-
-function snakeLooks() {
-  snake.beginPath();
-  snake.rect(snakeX, snakeY, 20, 20);
-  snake.fillStyle = "yellow";
-  snake.fill();
-  snake.closePath();
+function changeDirection(e) {
+  if (e.key === "ArrowRight" && speedX != -1) {
+    speedX = 1;
+    speedY = 0;
+  }
+  if (e.key === "ArrowLeft" && speedX != 1) {
+    speedX = -1;
+    speedY = 0;
+  }
+  if (e.key === "ArrowUp" && speedY != 1) {
+    speedX = 0;
+    speedY = -1;
+  }
+  if (e.key === "ArrowDown" && speedY != -1) {
+    speedX = 0;
+    speedY = 1;
+  }
 }
 
-function snakeSpawn() {
-  // this resets the block the snake is on before so it looks like it is moving.
-  snakeLooks();
-  snake.clearRect(0, 0, 0, 0);
-  // snakeX += snakeRight;
-//   snakeY += snakeUp;
+function updateElementValue(elementId, value) {
+    const element = document.getElementById(elementId)
+    
+    element.value = value;
+}
+
+function points() {
+    let score = Math.floor(document.getElementById("score").value);
+    score = score + 1;
+  console.log(score)
+    updateElementValue("score", score)
+  }
+
+
+
+function gameEnd() {
   if (
     snakeY < 0 ||
     snakeY > board.height - 20 ||
     snakeX < 0 ||
     snakeX > board.width - 20
   ) {
-    endGame();
+    alert("GAME OVER", 1)
   }
-  
 }
-setInterval(snakeSpawn, 100);
 
-function endGame() {
-    alert("game over");
-  }
-
-function addToSnake(){
-    if (snakeX === foodX && snakeY === foodY){
-        snakeSizeHeight = snakeSizeHeight * 2;
-        foodSpawn()
-    }
-}
 
